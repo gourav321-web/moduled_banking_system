@@ -1,22 +1,12 @@
 # banking system 
 require 'csv'
-require './Auth_module/register'
-require './Auth_module/login'
-require './Auth_module/logout'
-require './Business_logic_module/withdraw'
-require './Business_logic_module/deposit'
-require './Business_logic_module/check_balance'
-require './Business_logic_module/update_balance'
-require './utilities/check_file'
+require_relative 'authentication'
+require_relative 'bank_operations'
+require_relative 'check_file'
 
 class Main
-  include Register
-  include Login
-  include Logout
-  include Balance
-  include Update_balance
-  include Deposite
-  include Withdraw
+  include Authentication
+  include Bankoperation
   include Check_file
 
 
@@ -50,7 +40,7 @@ class Main
         when 6
           logout
         when 7
-          break
+          break 
         else
           puts "invalid choice"
       end
