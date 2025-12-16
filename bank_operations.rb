@@ -1,4 +1,10 @@
-module Bankoperation
+require 'csv'
+
+class BankOperation
+  def initialize(user)
+    @user = user
+  end
+
   def withdraw
     if @user[:email].empty?
       puts "User not logged in!"
@@ -6,12 +12,11 @@ module Bankoperation
     end
 
     print "Enter amount to withdraw: "
-    amount=gets.chomp.to_f.round(2)
-    
-    if amount < 0.1 
+    amount = gets.chomp.to_f.round(2)
+
+    if amount < 0.1
       puts "please enter valid amount"
       return
-
     elsif amount > @user[:balance]
       puts "Insufficient balance"
       return
@@ -29,7 +34,7 @@ module Bankoperation
     end
 
     print "Enter amount to deposit: "
-    amount=gets.chomp.to_f.round(2)
+    amount = gets.chomp.to_f.round(2)
 
     if amount < 0.1
       puts "please enter valid amount"
@@ -39,22 +44,20 @@ module Bankoperation
     @user[:balance] += amount
     update_balance
     puts "after deposit #{amount}, balance is #{@user[:balance]}"
-    return
   end
 
   def update_balance
-    rows = CSV.read("User.csv",headers:true)
+    rows = CSV.read("User.csv", headers: true)
+
     rows.each do |row|
-      if row["email"] == @user[:email]
+      if row["email"].to_s.strip == @user[:email]
         row["balance"] = @user[:balance].to_s
       end
     end
-    
-    CSV.open("User.csv","w") do |csv|
+
+    CSV.open("User.csv", "w") do |csv|
       csv << rows.headers
-      rows.each do |row|
-        csv << row
-      end
+      rows.each { |row| csv << row }
     end
   end
 
@@ -64,7 +67,5 @@ module Bankoperation
       return
     end
     puts "balance : #{@user[:balance]}"
-    return
   end
-  
 end

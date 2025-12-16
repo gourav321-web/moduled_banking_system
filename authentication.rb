@@ -1,4 +1,10 @@
-module Authentication
+require 'csv'
+
+class Authentication
+  def initialize(user)
+    @user = user
+  end
+
   def register
     check_file
     @user[:email] = ''
@@ -20,16 +26,13 @@ module Authentication
       @email = gets.chomp.downcase
       if @email.empty?
         puts "please enter Email"
-
       elsif(!email_validate)
         @email.gsub!(/\s+/ , "")
         puts "Please enter valid email"
-
       else
         @email.gsub!(/\s+/ , "")
         break
       end
-
     end
 
     loop do
@@ -44,16 +47,22 @@ module Authentication
       end
     end
 
-    CSV.foreach("User.csv", headers:true) do |row|
-      row_email = row["email"]
+    CSV.foreach("User.csv", headers: true) do |row|
       if row["email"] == @email
         puts "Email already registered !"
         return
       end
     end
 
-    @new_user={name:@name,email:@email,password:@password,balance:0}
-    CSV.open("User.csv","a") do |users|
+    @new_user = {
+      name: @name,
+      email: @email,
+      password: @password,
+      balance: 0
+    }
+
+    CSV.open("User.csv", "a") do |users|
+      # users << @new_user.values.map { |v| v.to_s.strip }
       users << @new_user.values
     end
 
@@ -63,7 +72,7 @@ module Authentication
   def login
     loop do
       print "Enter your Email : "
-      @email=gets.chomp.downcase
+      @email = gets.chomp.downcase
       if @email.empty?
         puts "please enter Email"
       else
@@ -74,22 +83,25 @@ module Authentication
 
     loop do
       print "Enter Password : "
-      @password=gets.chomp
+      @password = gets.chomp
       if @password.empty?
         puts "please enter Password"
       else
-        break  
+        break
       end
     end
 
-    found=false
-    CSV.foreach("User.csv",headers:true) do |row|
-      if row["email"]==@email && row["password"]==@password
-        found=true
+    found = false
+
+    CSV.foreach("User.csv", headers: true) do |row|
+      if row["email"].to_s.strip.downcase == @email &&
+         row["password"].to_s.strip == @password
+
+        found = true
         @user[:name] = row["name"]
-        @user[:email]=row["email"]
+        @user[:email] = row["email"]
         @user[:password] = row["password"]
-        @user[:balance]=row["balance"].to_i
+        @user[:balance] = row["balance"].to_i
         puts "Login Successful."
         break
       end
@@ -103,23 +115,29 @@ module Authentication
       puts "user already logged out !"
       return
     end
-    @user[:email]=""
+    @user[:email] = ""
     puts "User logged out successfully"
   end
 
   private
+
   def email_validate
-    return /\A[^@\s]+@([^@\s]+\.)+[^@\s]+\z/.match?(@email)
+    /\A[^@\s]+@([^@\s]+\.)+[^@\s]+\z/.match?(@email)
   end
-  
-  private
+
   def name_validator
-    return (/^[a-zA-Z]{3,}(?: [a-zA-Z]+){0,2}$/.match?(@name))
+    /^[a-zA-Z]{3,}(?: [a-zA-Z]+){0,2}$/.match?(@name)
   end
 
-  private
   def password_validator
-    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.match?(@password)
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/.match?(@password)
   end
 
+  def check_file
+    unless File.exist?("User.csv")
+      CSV.open("User.csv", "w") do |csv|
+        csv << ["name", "email", "password", "balance"]
+      end
+    end
+  end
 end
